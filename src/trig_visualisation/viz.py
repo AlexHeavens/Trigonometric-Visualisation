@@ -1,8 +1,9 @@
 import math
+import numpy as np
 import shapely.geometry as geometry
 
 from bokeh.io import curdoc
-from bokeh.layouts import column, row
+from bokeh.layouts import column
 from bokeh.models import ColumnDataSource, Slider
 from bokeh.plotting import figure
 
@@ -88,8 +89,8 @@ def create_circle_figure(data_sources):
         )
 
     circle_figure = figure(
-        plot_height=radius * 4,
-        plot_width=radius * 4,
+        plot_height=int(radius * 4),
+        plot_width=int(radius * 4),
         title="Trigonometric Values",
         tools="crosshair,reset,save",
         x_range=[-radius * 1.5, radius * 1.5],
@@ -102,19 +103,47 @@ def create_circle_figure(data_sources):
     return circle_figure
 
 
+def create_trig_figure(trig_function, linear_resolution, color):
+
+    x_range = [-2.0 * math.pi - 1.0, 2.0 * math.pi + 1.0]
+    trig_figure = figure(
+        plot_height=300,
+        plot_width=600,
+        title=trig_function.__name__,
+        tools="crosshair,reset,save",
+        x_range=x_range,
+        y_range=[-1.2, 1.2],
+    )
+    xs = np.arange(x_range[0], x_range[1], linear_resolution)
+    ys = trig_function(xs)
+    trig_figure.line(xs, ys, line_color=color)
+    return trig_figure
+
+
 def main():
 
     data_sources = dict(
         radial_coordinates=ColumnDataSource(),
         opposite_coordinates=ColumnDataSource(),
         adjacent_coordinates=ColumnDataSource(),
-        radius=100,
+        radius=100.0,
         angular_resolution=0.05,
-        angle_in_radians=1,
+        linear_resolution=0.1,
+        angle_in_radians=1.0,
     )
+    linear_resolution = data_sources["linear_resolution"]
     update_data_sources(data_sources)
 
     circle_figure = create_circle_figure(data_sources=data_sources)
+    sin_figure = create_trig_figure(
+        trig_function=np.sin, linear_resolution=linear_resolution, color="blue"
+    )
+    cos_figure = create_trig_figure(
+        trig_function=np.cos, linear_resolution=linear_resolution, color="red"
+    )
+    tan_figure = create_trig_figure(
+        trig_function=np.tan, linear_resolution=linear_resolution, color="purple"
+    )
 
     angle_in_radians_slider = Slider(
         title="angle (radians)",
@@ -133,7 +162,9 @@ def main():
     # Set up layouts and add to document
     inputs = column(angle_in_radians_slider)
 
-    curdoc().add_root(row(inputs, circle_figure, width=800))
+    curdoc().add_root(
+        column(inputs, circle_figure, sin_figure, cos_figure, tan_figure, width=800)
+    )
     curdoc().title = "Trigonometry Values"
 
 

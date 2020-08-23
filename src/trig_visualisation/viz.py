@@ -51,18 +51,18 @@ def update_data_sources(data_sources):
     )
 
 
-def plot_initial_geometries(data_sources):
+def create_circle_figure(data_sources):
 
     radius = data_sources["radius"]
 
     def plot_radius_circle():
         circle = geometry.Point((0, 0)).buffer(radius).exterior.coords
 
-        plot.line(*circle.xy, color="gray", line_width=2, line_alpha=0.6)
+        circle_figure.line(*circle.xy, color="gray", line_width=2, line_alpha=0.6)
 
     def plot_trig_geometries():
 
-        plot.line(
+        circle_figure.line(
             "x",
             "y",
             source=data_sources["radial_coordinates"],
@@ -70,7 +70,7 @@ def plot_initial_geometries(data_sources):
             line_width=3,
             line_alpha=0.6,
         )
-        plot.line(
+        circle_figure.line(
             "x",
             "y",
             source=data_sources["opposite_coordinates"],
@@ -78,7 +78,7 @@ def plot_initial_geometries(data_sources):
             line_width=3,
             line_alpha=0.6,
         )
-        plot.line(
+        circle_figure.line(
             "x",
             "y",
             source=data_sources["adjacent_coordinates"],
@@ -87,7 +87,7 @@ def plot_initial_geometries(data_sources):
             line_alpha=0.6,
         )
 
-    plot = figure(
+    circle_figure = figure(
         plot_height=radius * 4,
         plot_width=radius * 4,
         title="Trigonometric Values",
@@ -99,7 +99,7 @@ def plot_initial_geometries(data_sources):
     plot_radius_circle()
     plot_trig_geometries()
 
-    return plot
+    return circle_figure
 
 
 def main():
@@ -112,18 +112,17 @@ def main():
         angular_resolution=0.05,
         angle_in_radians=1,
     )
+    update_data_sources(data_sources)
 
-    angle_in_radians = data_sources["angle_in_radians"]
+    circle_figure = create_circle_figure(data_sources=data_sources)
+
     angle_in_radians_slider = Slider(
         title="angle (radians)",
-        value=angle_in_radians,
+        value=data_sources["angle_in_radians"],
         start=-2 * math.pi,
         end=2 * math.pi,
         step=data_sources["angular_resolution"],
     )
-
-    update_data_sources(data_sources)
-    plot = plot_initial_geometries(data_sources=data_sources)
 
     def update(attr, old, new):
         data_sources["angle_in_radians"] = angle_in_radians_slider.value
@@ -134,7 +133,7 @@ def main():
     # Set up layouts and add to document
     inputs = column(angle_in_radians_slider)
 
-    curdoc().add_root(row(inputs, plot, width=800))
+    curdoc().add_root(row(inputs, circle_figure, width=800))
     curdoc().title = "Trigonometry Values"
 
 

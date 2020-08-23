@@ -28,12 +28,14 @@ def get_trig_geometries(angle_in_radians: float, radius: float):
     }
 
 
-def update_data_sources(data_sources, angle_in_radians, radius):
+def update_data_sources(data_sources):
     def update_linestring_data_source(linestring, data_source):
         x, y = linestring.xy
         data_source.data = dict(x=x, y=y)
 
-    geometries = get_trig_geometries(angle_in_radians=angle_in_radians, radius=radius)
+    geometries = get_trig_geometries(
+        angle_in_radians=data_sources["angle_in_radians"], radius=data_sources["radius"]
+    )
 
     update_linestring_data_source(
         linestring=geometries["radial_line"],
@@ -49,45 +51,41 @@ def update_data_sources(data_sources, angle_in_radians, radius):
     )
 
 
-def plot_trig_geometries(plot, data_sources):
+def plot_initial_geometries(data_sources):
 
-    plot.line(
-        "x",
-        "y",
-        source=data_sources["radial_coordinates"],
-        color="green",
-        line_width=3,
-        line_alpha=0.6,
-    )
-    plot.line(
-        "x",
-        "y",
-        source=data_sources["opposite_coordinates"],
-        color="blue",
-        line_width=3,
-        line_alpha=0.6,
-    )
-    plot.line(
-        "x",
-        "y",
-        source=data_sources["adjacent_coordinates"],
-        color="red",
-        line_width=3,
-        line_alpha=0.6,
-    )
+    radius = data_sources["radius"]
 
+    def plot_radius_circle():
+        circle = geometry.Point((0, 0)).buffer(radius).exterior.coords
 
-def main():
-    angular_resolution = 0.05
-    radius = 100
+        plot.line(*circle.xy, color="gray", line_width=2, line_alpha=0.6)
 
-    angle_in_radians_slider = Slider(
-        title="angle (radians)",
-        value=1.0,
-        start=-2 * math.pi,
-        end=2 * math.pi,
-        step=angular_resolution,
-    )
+    def plot_trig_geometries():
+
+        plot.line(
+            "x",
+            "y",
+            source=data_sources["radial_coordinates"],
+            color="green",
+            line_width=3,
+            line_alpha=0.6,
+        )
+        plot.line(
+            "x",
+            "y",
+            source=data_sources["opposite_coordinates"],
+            color="blue",
+            line_width=3,
+            line_alpha=0.6,
+        )
+        plot.line(
+            "x",
+            "y",
+            source=data_sources["adjacent_coordinates"],
+            color="red",
+            line_width=3,
+            line_alpha=0.6,
+        )
 
     plot = figure(
         plot_height=radius * 4,
@@ -98,24 +96,38 @@ def main():
         y_range=[-radius * 1.5, radius * 1.5],
     )
 
+    plot_radius_circle()
+    plot_trig_geometries()
+
+    return plot
+
+
+def main():
+
     data_sources = dict(
         radial_coordinates=ColumnDataSource(),
         opposite_coordinates=ColumnDataSource(),
         adjacent_coordinates=ColumnDataSource(),
+        radius=100,
+        angular_resolution=0.05,
+        angle_in_radians=1,
     )
 
-    angle_in_radians = angle_in_radians_slider.value
-    plot_trig_geometries(plot=plot, data_sources=data_sources)
-    update_data_sources(
-        data_sources=data_sources, angle_in_radians=angle_in_radians, radius=radius
+    angle_in_radians = data_sources["angle_in_radians"]
+    angle_in_radians_slider = Slider(
+        title="angle (radians)",
+        value=angle_in_radians,
+        start=-2 * math.pi,
+        end=2 * math.pi,
+        step=data_sources["angular_resolution"],
     )
+
+    update_data_sources(data_sources)
+    plot = plot_initial_geometries(data_sources=data_sources)
 
     def update(attr, old, new):
-        update_data_sources(
-            data_sources=data_sources,
-            angle_in_radians=angle_in_radians_slider.value,
-            radius=radius,
-        )
+        data_sources["angle_in_radians"] = angle_in_radians_slider.value
+        update_data_sources(data_sources)
 
     angle_in_radians_slider.on_change("value", update)
 

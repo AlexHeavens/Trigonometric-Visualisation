@@ -1,3 +1,7 @@
 --requirement requirements.txt
 
-pre-commit==2.7.0
+pytest==9.2.0
+black==26.10.1
+flake8==7.5.0
+actionlint-py==1.7.12.25
+shellcheck-py==0.11.0.1

@@ -89,8 +89,8 @@ def create_circle_figure(data_sources):
         )
 
     circle_figure = figure(
-        plot_height=int(radius * 4),
-        plot_width=int(radius * 4),
+        height=int(radius * 4),
+        width=int(radius * 4),
         title="Trigonometric Values",
         tools="crosshair,reset,save",
         x_range=[-radius * 1.5, radius * 1.5],
@@ -107,8 +107,8 @@ def create_trig_figure(trig_function, linear_resolution, color):
 
     x_range = [-2.0 * math.pi - 1.0, 2.0 * math.pi + 1.0]
     trig_figure = figure(
-        plot_height=300,
-        plot_width=600,
+        height=300,
+        width=600,
         title=trig_function.__name__,
         tools="crosshair,reset,save",
         x_range=x_range,
